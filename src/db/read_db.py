@@ -11,7 +11,12 @@ import Stemmer
 from typing import List
 import os
 from dotenv import load_dotenv
+from src.logging_config import get_logger
+
 load_dotenv()
+
+logger = get_logger(__name__)
+
 
 class SemanticBM25Retriever(BaseRetriever):
     def __init__(self, collection_name: str = "default", mode: str = "OR") -> None:
@@ -23,31 +28,49 @@ class SemanticBM25Retriever(BaseRetriever):
         VECTOR_DB_PATH = os.path.join(BASE_PATH, os.getenv("VECTOR_DB_PATH", ""))
         BM25_DB_PATH = os.path.join(BASE_PATH, os.getenv("BM25_DB_PATH", ""))
 
-        # Embedding Model
-        self._embed_model = AzureEmbedding()
+        try:
+            # Embedding Model
+            self._embed_model = AzureEmbedding()
 
-        # Read stored Vector Database
-        self._vectordb = chromadb.PersistentClient(path=VECTOR_DB_PATH)
-        _chroma_collection = self._vectordb.get_or_create_collection(collection_name)
-        self._vector_store = ChromaVectorStore(chroma_collection=_chroma_collection)
-        self._index = VectorStoreIndex.from_vector_store(
-            self._vector_store,
-            embed_model=self._embed_model,
-        )
+            # Read stored Vector Database
+            self._vectordb = chromadb.PersistentClient(path=VECTOR_DB_PATH)
+            _chroma_collection = self._vectordb.get_or_create_collection(
+                collection_name
+            )
+            self._vector_store = ChromaVectorStore(chroma_collection=_chroma_collection)
+            self._index = VectorStoreIndex.from_vector_store(
+                self._vector_store,
+                embed_model=self._embed_model,
+            )
 
-        self._chromadb_retriever = self._index.as_retriever()
+            self._chromadb_retriever = self._index.as_retriever()
 
-        # Read stored BM25 Database
-        self._bm25_retriever = BM25Retriever.from_persist_dir(BM25_DB_PATH)
-
+            # Read stored BM25 Database
+            self._bm25_retriever = BM25Retriever.from_persist_dir(BM25_DB_PATH)
+        except Exception:
+            logger.exception("Failed to initialize retrievers")
+            raise
 
     def _retrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
+        logger.info(f"Querying database for: {query_bundle.query_str}")
+        try:
+            # Retrieving Nodes from Database
+            vector_nodes = self._chromadb_retriever.retrieve(query_bundle)
+            bm25_nodes = self._bm25_retriever.retrieve(query_bundle)
 
-        # Retrieving Nodes from Database
-        vector_nodes = self._chromadb_retriever.retrieve(query_bundle)
-        bm25_nodes = self._bm25_retriever.retrieve(query_bundle)
+            fused_nodes = reciprocal_rank_fusion(vector_nodes, bm25_nodes)
+        except Exception:
+            logger.exception("Error retrieving documents")
+            raise
 
-        fused_nodes = reciprocal_rank_fusion(vector_nodes, bm25_nodes)
+        filenames = []
+        for n in fused_nodes:
+            meta = getattr(n.node, "metadata", {}) or {}
+            fname = meta.get("file_name") or meta.get("file_path")
+            if fname:
+                filenames.append(os.path.basename(fname))
+        if filenames:
+            logger.info("Documents accessed: %s", ", ".join(filenames))
 
         if self._mode == "AND":
             vector_ids = {n.node.node_id for n in vector_nodes}
@@ -65,5 +88,3 @@ if __name__ == "__main__":
     res = db.retrieve("List of all sandwich recipes.")
 
     print(len(res))
-
-
