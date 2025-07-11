@@ -1,5 +1,5 @@
 from llama_index.core import VectorStoreIndex
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from src.azure_client import AzureEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.retrievers.bm25 import BM25Retriever
 from llama_index.core import QueryBundle
@@ -22,7 +22,7 @@ class SemanticBM25Retriever(BaseRetriever):
         BM25_DB_PATH = os.getenv("BM25_DB_PATH")
 
         # Embedding Model
-        self._embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-base-en-v1.5")
+        self._embed_model = AzureEmbedding()
 
         # Read stored Vector Database
         self._vectordb = chromadb.PersistentClient(path=VECTOR_DB_PATH)

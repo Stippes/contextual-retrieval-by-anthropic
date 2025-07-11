@@ -1,6 +1,6 @@
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.core import StorageContext
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from src.azure_client import AzureEmbedding
 from llama_index.core import VectorStoreIndex
 import chromadb
 import os
@@ -13,7 +13,7 @@ def save_chromadb(nodes: list,
     print("-:-:-:- ChromaDB [Vector Database] creating ... -:-:-:-")
 
     # Embedding Model
-    embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-base-en-v1.5")
+    embed_model = AzureEmbedding()
 
     # Path to save the database file
     save_pth = os.path.join(save_dir, db_name)
