@@ -12,8 +12,8 @@ def create_and_save_db(
         collection_name : str,
         save_dir: str,
         db_name: str = "default",
-        chunk_size: int = 512, 
-        chunk_overlap: int =20
+        chunk_size: int = 500,
+        chunk_overlap: int = 50
         ) -> None:
 
     # Path directory to data storage
@@ -69,6 +69,12 @@ def create_and_save_db(
         response_text = chat_completion(prompt)
         contextual_text = response_text + content_body
         nodes[idx].text = contextual_text
+
+        metadata = node.metadata or {}
+        metadata["file_name"] = metadata.get("file_name", "")
+        metadata["section"] = idx
+        nodes[idx].metadata = metadata
+
         idx += 1
 
         print(f'Context response from LLM => {response_text}\n For given text chunk => {content_body}')

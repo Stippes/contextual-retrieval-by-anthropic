@@ -36,7 +36,8 @@ Create Python `env` and run `requirements.txt` file
 pip install -r requirements.txt
 ```
 
-Create a directory `data` and add all the PDF's there
+Create a directory `data` and add your documents here. Supported file types are
+`.pdf`, `.docx`, and `.txt`.
 ```shell
 mkdir data
 ```
