@@ -42,17 +42,12 @@ Create a directory `data` and add your documents here. Supported file types are
 mkdir data
 ```
 
-Create a `.env` file and add the following variables. `BASE_PATH` defines the
+Copy `.env.template` to `.env` and update the values. `BASE_PATH` defines the
 drive or root directory you want to store all data under. Other paths are
 appended to this base location.
 ```shell
-BASE_PATH="/path/to/drive"
-DATA_DIR="./data"
-SAVE_DIR="./src/db"
-VECTOR_DB_PATH="src/db/cook_book_db_vectordb"
-BM25_DB_PATH="src/db/cook_book_db_bm25"
-COLLECTION_NAME="add_collection_name"
-API_URL="http://127.0.0.1:8000/rag-chat"
+cp .env.template .env
+# then edit .env
 ```
 
 Run Python file `create_save_db.py` to create ChromaDB and BM25 databases 
@@ -76,6 +71,23 @@ Run the python file main.py to start streamlit app
 ```shell
 streamlit run main.py
 ```
+
+### Docker Deployment
+
+Build the image and mount a drive for `BASE_PATH` so that all data and logs are
+stored on your chosen volume.
+
+```shell
+docker build -t contextual-rag .
+docker run -p 8000:8000 -p 8501:8501 \
+  -v /my/drive:/data \
+  -e BASE_PATH=/data \
+  --env-file .env \
+  contextual-rag
+```
+
+The Streamlit UI will be available on port `8501` and the FastAPI endpoint on
+port `8000`.
 
 ### Additional Information
 

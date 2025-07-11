@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, os.path.abspath("."))
 
 from src.db.fusion import reciprocal_rank_fusion
-from llama_index.core.schema import TextNode, NodeWithScore
+from src.db.simple_schema import TextNode, NodeWithScore
 
 
 def _make_node(node_id: str) -> NodeWithScore:
