@@ -76,5 +76,5 @@ class RAGWorkflow(Workflow):
 
         response = await summarizer.asynthesize(query, nodes=ev.nodes)
 
-        return StopEvent(result=response)
+        return StopEvent(result={"answer": response, "nodes": ev.nodes})
     
