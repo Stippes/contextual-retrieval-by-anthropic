@@ -41,12 +41,15 @@ Create a directory `data` and add all the PDF's there
 mkdir data
 ```
 
-Create `.env` file and add below variables. 
+Create a `.env` file and add the following variables. `BASE_PATH` defines the
+drive or root directory you want to store all data under. Other paths are
+appended to this base location.
 ```shell
+BASE_PATH="/path/to/drive"
 DATA_DIR="./data"
 SAVE_DIR="./src/db"
-VECTOR_DB_PATH="./src/db/cook_book_db_vectordb"
-BM25_DB_PATH="./src/db/cook_book_db_bm25"
+VECTOR_DB_PATH="src/db/cook_book_db_vectordb"
+BM25_DB_PATH="src/db/cook_book_db_bm25"
 COLLECTION_NAME="add_collection_name"
 API_URL="http://127.0.0.1:8000/rag-chat"
 ```

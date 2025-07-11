@@ -6,7 +6,8 @@ import json
 from dotenv import load_dotenv
 load_dotenv()
 
-st.title("RAG with Contextual Retrieval")
+BASE_PATH = os.getenv("BASE_PATH", "")
+st.title(f"Chatbot Interface for Drive: {BASE_PATH}")
 st.markdown("Implemented in Llama-index 🦙")
 st.markdown("Link to the Anthropic [blog post](https://www.anthropic.com/news/contextual-retrieval)")
 
