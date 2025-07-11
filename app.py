@@ -1,12 +1,12 @@
 from src.tools.rag_workflow import RAGWorkflow
 from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 import os
 from dotenv import load_dotenv
 from src.logging_config import get_logger
+from typing import List
 
 load_dotenv()
 
@@ -36,17 +36,26 @@ async def RAG_chat(w, query):
     result = await w.run(query=query, retriever=retriever)
     nodes = result["nodes"]
     answer = result["answer"]
-    async for chunk in answer.async_response_gen():
-        yield chunk
+
+    sources: List[dict] = [
+        {"file": n.node.metadata.get("file_name"), "text": n.node.metadata.get("raw_chunk")}
+        for n in nodes
+    ]
+    filenames = [os.path.basename(n.node.metadata.get("file_name", "")) for n in nodes if n.node.metadata.get("file_name")]
+    if filenames:
+        logger.info("Documents accessed: %s", ", ".join(filenames))
+
+    response_obj = await answer.get_response()
+    final_answer = response_obj.response
+
+    return {"answer": final_answer, "sources": sources}
 
 
 @app.post("/rag-chat")
 async def root(user_query: UserQuery):
     logger.info(f"User query: {user_query.query}")
     try:
-        return StreamingResponse(
-            RAG_chat(w=w, query=user_query.query), media_type="text/event-stream"
-        )
+        return await RAG_chat(w=w, query=user_query.query)
     except Exception:
         logger.exception("Error processing /rag-chat request")
         raise
