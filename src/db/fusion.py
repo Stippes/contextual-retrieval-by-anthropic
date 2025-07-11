@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Sequence, List
-from llama_index.core.schema import NodeWithScore
+from .simple_schema import NodeWithScore
 
 
 def reciprocal_rank_fusion(
