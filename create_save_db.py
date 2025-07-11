@@ -3,8 +3,9 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-data_dir = os.getenv("DATA_DIR")
-save_dir = os.getenv("SAVE_DIR")
+BASE_PATH = os.getenv("BASE_PATH", "")
+data_dir = os.path.join(BASE_PATH, os.getenv("DATA_DIR", ""))
+save_dir = os.path.join(BASE_PATH, os.getenv("SAVE_DIR", ""))
 collection_name = os.getenv("COLLECTION_NAME")
 db_name = "cook_book_db"
 

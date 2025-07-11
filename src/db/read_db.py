@@ -18,8 +18,9 @@ class SemanticBM25Retriever(BaseRetriever):
         self._mode = mode
 
         # Path to database directories
-        VECTOR_DB_PATH = os.getenv("VECTOR_DB_PATH")
-        BM25_DB_PATH = os.getenv("BM25_DB_PATH")
+        BASE_PATH = os.getenv("BASE_PATH", "")
+        VECTOR_DB_PATH = os.path.join(BASE_PATH, os.getenv("VECTOR_DB_PATH", ""))
+        BM25_DB_PATH = os.path.join(BASE_PATH, os.getenv("BM25_DB_PATH", ""))
 
         # Embedding Model
         self._embed_model = AzureEmbedding()

@@ -3,18 +3,23 @@ from llama_index.core.node_parser import TokenTextSplitter
 from src.azure_client import chat_completion
 from .save_vectordb import save_chromadb
 from .save_bm25 import save_BM25
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 def create_and_save_db(
-        data_dir: str, 
-        collection_name : str, 
-        save_dir: str, 
+        data_dir: str,
+        collection_name : str,
+        save_dir: str,
         db_name: str = "default",
         chunk_size: int = 512, 
         chunk_overlap: int =20
         ) -> None:
 
-    # Path directory to data storage 
-    DATA_DIR = data_dir
+    # Path directory to data storage
+    BASE_PATH = os.getenv("BASE_PATH", "")
+    DATA_DIR = os.path.join(BASE_PATH, data_dir)
+    SAVE_DIR = os.path.join(BASE_PATH, save_dir)
 
     # Hyperparameters for text splitting
     CHUNK_SIZE = chunk_size
@@ -72,11 +77,11 @@ def create_and_save_db(
     bm25db_name = db_name + "_bm25"
     
     # Saving the Vector Database and BM25 Database
-    save_chromadb(nodes=nodes, 
-                  save_dir=save_dir, 
-                  db_name=vectordb_name, 
+    save_chromadb(nodes=nodes,
+                  save_dir=SAVE_DIR,
+                  db_name=vectordb_name,
                   collection_name=collection_name)
     
-    save_BM25(nodes=nodes, 
-              save_dir=save_dir, 
+    save_BM25(nodes=nodes,
+              save_dir=SAVE_DIR,
               db_name=bm25db_name)
