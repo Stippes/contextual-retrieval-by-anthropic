@@ -5,6 +5,7 @@ from llama_index.retrievers.bm25 import BM25Retriever
 from llama_index.core import QueryBundle
 from llama_index.core.schema import NodeWithScore
 from llama_index.core.retrievers import BaseRetriever
+from .fusion import reciprocal_rank_fusion
 import chromadb
 import Stemmer
 from typing import List
@@ -46,20 +47,15 @@ class SemanticBM25Retriever(BaseRetriever):
         vector_nodes = self._chromadb_retriever.retrieve(query_bundle)
         bm25_nodes = self._bm25_retriever.retrieve(query_bundle)
 
-        vector_ids = {n.node.node_id for n in vector_nodes}
-        bm25_ids = {n.node.node_id for n in bm25_nodes}
-
-        combined_dict = {n.node.node_id: n for n in vector_nodes}
-        combined_dict.update({n.node.node_id: n for n in bm25_nodes})
+        fused_nodes = reciprocal_rank_fusion(vector_nodes, bm25_nodes)
 
         if self._mode == "AND":
-            retrieve_ids = vector_ids.intersection(bm25_ids)
-        else:
-            retrieve_ids = vector_ids.union(bm25_ids)
+            vector_ids = {n.node.node_id for n in vector_nodes}
+            bm25_ids = {n.node.node_id for n in bm25_nodes}
+            valid_ids = vector_ids.intersection(bm25_ids)
+            fused_nodes = [n for n in fused_nodes if n.node.node_id in valid_ids]
 
-        retrieve_nodes = [combined_dict[rid] for rid in retrieve_ids]
-
-        return retrieve_nodes
+        return fused_nodes
 
 
 if __name__ == "__main__":
