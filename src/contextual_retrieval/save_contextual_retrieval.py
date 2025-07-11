@@ -1,6 +1,6 @@
 from llama_index.core import SimpleDirectoryReader
-from llama_index.llms.ollama import Ollama
 from llama_index.core.node_parser import TokenTextSplitter
+from src.azure_client import chat_completion
 from .save_vectordb import save_chromadb
 from .save_bm25 import save_BM25
 
@@ -20,8 +20,7 @@ def create_and_save_db(
     CHUNK_SIZE = chunk_size
     CHUNK_OVERLAP = chunk_overlap
 
-    # Initializing LLM for contextual retrieval
-    llm = Ollama(model="gemma2:2b", request_timeout=60.0)
+    # Using Azure OpenAI for contextual retrieval
     
     # Reading documents
     reader = SimpleDirectoryReader(input_dir=DATA_DIR)
@@ -62,12 +61,12 @@ def create_and_save_db(
         prompt = template.format(WHOLE_DOCUMENT=original_document_content, 
                                  CHUNK_CONTENT=content_body)
         
-        llm_response = llm.complete(prompt)
-        contextual_text = llm_response.text + content_body
+        response_text = chat_completion(prompt)
+        contextual_text = response_text + content_body
         nodes[idx].text = contextual_text
         idx += 1
 
-        print(f'Context response from LLM => {llm_response}\n For given text chunk => {content_body}')
+        print(f'Context response from LLM => {response_text}\n For given text chunk => {content_body}')
     
     vectordb_name = db_name + "_vectordb"
     bm25db_name = db_name + "_bm25"
