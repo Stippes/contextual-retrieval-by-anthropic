@@ -34,7 +34,9 @@ w._timeout = 120.0
 async def RAG_chat(w, query):
     retriever = await w.run(collection_name=os.getenv("COLLECTION_NAME"))
     result = await w.run(query=query, retriever=retriever)
-    async for chunk in result.async_response_gen():
+    nodes = result["nodes"]
+    answer = result["answer"]
+    async for chunk in answer.async_response_gen():
         yield chunk
 
 
