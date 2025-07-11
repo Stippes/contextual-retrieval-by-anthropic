@@ -12,14 +12,23 @@ st.markdown("Implemented in Llama-index 🦙")
 st.markdown("Link to the Anthropic [blog post](https://www.anthropic.com/news/contextual-retrieval)")
 
 # Streaming response from API call
+# Updated to handle JSON payload returned from the `/rag-chat` endpoint.
+# The assistant's answer is streamed token by token while the document
+# snippets are stored in ``st.session_state`` for later rendering.
 def response_generator(query):
     url = os.getenv("API_URL")
-    s = requests.Session()
     data = {"query": query}
-    with s.post(url, data=json.dumps(data), headers=None, stream=True) as resp:
-        for line in resp.iter_lines():
-            if line:
-                yield str(line.decode('utf-8')) + "\n"
+    with requests.Session() as s:
+        resp = s.post(url, json=data)
+        resp.raise_for_status()
+        payload = resp.json()
+
+    # Save document sources so they can be displayed after streaming
+    st.session_state["sources"] = payload.get("sources", [])
+
+    answer = payload.get("answer", "")
+    for word in answer.split():
+        yield word + " "
 
 # Function for first None request
 def fake_data():
@@ -48,5 +57,12 @@ with st.chat_message("assistant"):
         response = st.write_stream(response_generator(str(prompt)))
     else:
         response = st.write_stream(fake_data)
+
+    # Display document snippets associated with the response
+    for src in st.session_state.get("sources", []):
+        doc_name = os.path.basename(src.get("file", "Document"))
+        snippet = src.get("text", "")
+        with st.expander(doc_name):
+            st.write(snippet)
 
 st.session_state.messages.append({"role": "assistant", "content": response})
