@@ -61,17 +61,19 @@ def create_and_save_db(
     # Contextual Retrival : Providing context to existing Nodes [text chunks]
     idx = 0
     for node in nodes:
-        content_body = node.text    
+        content_body = node.text
 
-        prompt = template.format(WHOLE_DOCUMENT=original_document_content, 
+        metadata = node.metadata or {}
+        metadata["raw_chunk"] = content_body
+
+        prompt = template.format(WHOLE_DOCUMENT=original_document_content,
                                  CHUNK_CONTENT=content_body)
         
         response_text = chat_completion(prompt)
         contextual_text = response_text + content_body
         nodes[idx].text = contextual_text
 
-        metadata = node.metadata or {}
-        metadata["file_name"] = metadata.get("file_name", "")
+        metadata["file_name"] = metadata.get("file_name") or metadata.get("file_path") or ""
         metadata["section"] = idx
         nodes[idx].metadata = metadata
 
