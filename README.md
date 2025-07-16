@@ -1,88 +1,46 @@
-# Contextual Retrieval with Llama-Index (Anthropic)
-![banner_img](./img/dataflow.png)
+# Contextual Retrieval with Llama-Index
 
-This repository provides an implementation of [contextual retrieval](https://www.anthropic.com/news/contextual-retrieval), a novel approach that enhances the performance of retrieval systems by incorporating chunk-specific explanatory context. By prepending contextual information to each chunk before embedding and indexing, this method improves the relevance and accuracy of retrieved results.
+This project demonstrates contextual retrieval as described by Anthropic. Documents are indexed in a local [ChromaDB](https://www.trychroma.com/) store and served through FastAPI and Streamlit.
 
-### Key Technologies
+## Quick start
 
-- **Llama-Index:** A powerful framework for building semantic search applications.
-- **Ollama:** A local LLMs serving solution, using the gemma2:2b model.
-- **Streamlit:** A Python framework for building interactive web applications.
-- **FastAPI:** A high-performance API framework for building web applications.
-- **ChromaDB:** A vector database for efficient storage and retrieval of high-dimensional embeddings.
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/RionDsilvaCS/contextual-retrieval-by-anthropic.git
+   cd contextual-retrieval-by-anthropic
+   ```
 
-### Examples
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Example 1:
-![prompt_1_f](./img/prompt_1_f.png)
-![prompt_1_b](./img/prompt_1_s.png)
+3. **Prepare your documents**
+   ```bash
+   mkdir data
+   # add .pdf, .docx or .txt files inside this folder
+   ```
 
-Example 2:
-![prompt_3_f](./img/prompt_2_f.png)
-![prompt_3_b](./img/prompt_2_s.png)
+4. **Configure environment variables**
+   Copy `.env.example` to `.env` and fill in the values.
+   Important variables are:
+   - `BASE_PATH` – root directory for data and database files
+   - `DATA_DIR` – location of your documents relative to `BASE_PATH`
+   - `SAVE_DIR` – folder where the database is stored
+   - `COLLECTION_NAME` – name of the ChromaDB collection
+   - `API_URL` – URL of the FastAPI endpoint
+   - `AZURE_API_KEY`, `AZURE_ENDPOINT`, `AZURE_DEPLOYMENT_NAME`, `AZURE_API_VERSION` – credentials for Azure OpenAI
 
-### Setup
+5. **Create the vector store**
+   ```bash
+   python create_save_db.py
+   ```
 
-Clone the GitHub repo
-```shell
-git clone https://github.com/RionDsilvaCS/contextual-retrieval-by-anthropic.git
-```
-```shell
-cd contextual-retrieval-by-anthropic
-```
+6. **Start services**
+   ```bash
+   ollama serve            # run in a separate terminal
+   python app.py           # start the FastAPI server
+   streamlit run main.py   # launch the web UI
+   ```
 
-Create a Python `env` and install the dependencies listed in `requirements.txt`
-```shell 
-pip install -r requirements.txt
-```
-
-Create a directory `data` and add your documents here. Supported file types are
-`.pdf`, `.docx`, and `.txt`.
-```shell
-mkdir data
-```
-
-Create a `.env` file and add the following variables. `BASE_PATH` defines the
-drive or root directory you want to store all data under. Other paths are
-appended to this base location.
-```shell
-BASE_PATH="/path/to/drive"
-DATA_DIR="./data"
-SAVE_DIR="./src/db"
-VECTOR_DB_PATH="src/db/cook_book_db_vectordb"
-BM25_DB_PATH="src/db/cook_book_db_bm25"
-COLLECTION_NAME="add_collection_name"
-API_URL="http://127.0.0.1:8000/rag-chat"
-```
-
-Run Python file `create_save_db.py` to create ChromaDB and BM25 databases 
-```shell
-python create_save_db.py
-```
-
-### Run the application 
-
-Begin with running `Ollama` in separate terminal 
-```shell
-ollama serve
-```
-
-Run the python file `app.py` to boot up FastAPI server
-```shell
-python app.py
-```
-
-Run the python file main.py to start streamlit app
-```shell
-streamlit run main.py
-```
-
-### Additional Information
-
-- **Contextual Embedding:** The process of prepending chunk-specific explanatory context to each chunk before embedding.
-- **Contextual BM25:** A modified version of BM25 that incorporates contextual information for improved relevance scoring.
-
-----
-### Follow me
-
->GitHub [@RionDsilvaCS](https://github.com/RionDsilvaCS)  ·  Linkedin [@Rion Dsilva](https://www.linkedin.com/in/rion-dsilva-043464229/)   ·  Twitter [@Rion_Dsilva_CS](https://twitter.com/rion_dsilva_cs)
+Once running, open the Streamlit page and begin asking questions about your documents.
