@@ -1,0 +1,10 @@
+llama-index==0.9.48
+fastapi==0.110.1
+streamlit==1.32.0
+chromadb==0.4.14
+openai==1.6.1
+python-dotenv
+requests
+uvicorn
+Stemmer
+pytest
