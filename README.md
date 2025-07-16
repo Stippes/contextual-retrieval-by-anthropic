@@ -31,7 +31,7 @@ git clone https://github.com/RionDsilvaCS/contextual-retrieval-by-anthropic.git
 cd contextual-retrieval-by-anthropic
 ```
 
-Create Python `env` and run `requirements.txt` file
+Create a Python `env` and install the dependencies listed in `requirements.txt`
 ```shell 
 pip install -r requirements.txt
 ```
