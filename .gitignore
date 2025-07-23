@@ -3,3 +3,5 @@ data
 cook_book_db_bm25
 cook_book_db_vectordb
 .env
+
+venv/
