@@ -14,6 +14,7 @@ This project demonstrates contextual retrieval as described by Anthropic. Docume
    ```bash
    pip install -r requirements.txt
    ```
+   PyMuPDF is required for loading PDF files.
 
 3. **Prepare your documents**
    ```bash
