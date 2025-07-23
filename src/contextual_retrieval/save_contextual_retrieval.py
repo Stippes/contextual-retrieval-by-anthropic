@@ -1,5 +1,6 @@
 from llama_index.core import SimpleDirectoryReader
 from llama_index.core.node_parser import TokenTextSplitter
+from llama_index.readers.file import PyMuPDFReader
 import os
 from dotenv import load_dotenv
 import tiktoken
@@ -37,7 +38,10 @@ def create_and_save_db(
     # Using Azure OpenAI for contextual retrieval
     
     # Reading documents
-    reader = SimpleDirectoryReader(input_dir=DATA_DIR)
+    reader = SimpleDirectoryReader(
+        input_dir=DATA_DIR,
+        file_extractor={".pdf": PyMuPDFReader()}
+    )
     documents = reader.load_data()
 
     original_document_content = ""
