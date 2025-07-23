@@ -1,5 +1,4 @@
 from llama_index.core import VectorStoreIndex
-from src.azure_client import AzureEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.retrievers.bm25 import BM25Retriever
 from llama_index.core import QueryBundle
@@ -12,6 +11,11 @@ from typing import List
 import os
 from dotenv import load_dotenv
 from src.logging_config import get_logger
+
+if os.getenv("OPENAI_API_KEY"):
+    from src.openai_client import OpenAIEmbedding as EmbeddingModel
+else:
+    from src.azure_client import AzureEmbedding as EmbeddingModel
 
 load_dotenv()
 
@@ -30,7 +34,7 @@ class SemanticBM25Retriever(BaseRetriever):
 
         try:
             # Embedding Model
-            self._embed_model = AzureEmbedding()
+            self._embed_model = EmbeddingModel()
 
             # Read stored Vector Database
             self._vectordb = chromadb.PersistentClient(path=VECTOR_DB_PATH)
