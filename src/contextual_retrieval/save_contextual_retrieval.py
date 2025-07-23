@@ -2,6 +2,7 @@ from llama_index.core import SimpleDirectoryReader
 from llama_index.core.node_parser import TokenTextSplitter
 import os
 from dotenv import load_dotenv
+import tiktoken
 
 load_dotenv()
 
@@ -15,12 +16,14 @@ from .save_bm25 import save_BM25
 
 def create_and_save_db(
         data_dir: str,
-        collection_name : str,
+        collection_name: str,
         save_dir: str,
         db_name: str = "default",
         chunk_size: int = 500,
-        chunk_overlap: int = 50
-        ) -> None:
+        chunk_overlap: int = 50,
+        max_document_tokens: int = 2048,
+        context_window: int = 8192,
+    ) -> None:
 
     # Path directory to data storage
     BASE_PATH = os.getenv("BASE_PATH", "")
@@ -40,6 +43,21 @@ def create_and_save_db(
     original_document_content = ""
     for page in documents:
         original_document_content += page.text
+
+    # tokenizer for token-level operations
+    encoding = tiktoken.get_encoding("cl100k_base")
+
+    def _truncate_tokens(text: str, max_tokens: int) -> str:
+        tokens = encoding.encode(text)
+        if len(tokens) <= max_tokens:
+            return text
+        return encoding.decode(tokens[:max_tokens])
+
+    # limit size of the document context
+    original_document_content = _truncate_tokens(
+        original_document_content,
+        max_document_tokens,
+    )
 
     # Initializing text splitter
     splitter = TokenTextSplitter(
@@ -72,8 +90,19 @@ def create_and_save_db(
         metadata = node.metadata or {}
         metadata["raw_chunk"] = content_body
 
-        prompt = template.format(WHOLE_DOCUMENT=original_document_content,
-                                 CHUNK_CONTENT=content_body)
+        chunk_tokens = encoding.encode(content_body)
+        allowed_doc_tokens = max(
+            0, min(max_document_tokens, context_window - len(chunk_tokens))
+        )
+        truncated_document = _truncate_tokens(
+            original_document_content,
+            allowed_doc_tokens,
+        )
+
+        prompt = template.format(
+            WHOLE_DOCUMENT=truncated_document,
+            CHUNK_CONTENT=content_body,
+        )
         
         response_text = chat_completion(prompt)
         contextual_text = response_text + content_body
