@@ -5,3 +5,5 @@ cook_book_db_vectordb
 .env
 
 venv/
+
+data/
