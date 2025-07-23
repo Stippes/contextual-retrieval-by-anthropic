@@ -1,11 +1,17 @@
 from llama_index.core import SimpleDirectoryReader
 from llama_index.core.node_parser import TokenTextSplitter
-from src.azure_client import chat_completion
-from .save_vectordb import save_chromadb
-from .save_bm25 import save_BM25
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
+
+if os.getenv("OPENAI_API_KEY"):
+    from src.openai_client import chat_completion
+else:
+    from src.azure_client import chat_completion
+
+from .save_vectordb import save_chromadb
+from .save_bm25 import save_BM25
 
 def create_and_save_db(
         data_dir: str,
