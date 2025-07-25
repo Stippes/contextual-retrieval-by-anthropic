@@ -1,6 +1,6 @@
 from llama_index.core import SimpleDirectoryReader
 from llama_index.core.node_parser import TokenTextSplitter
-from llama_index.readers.file import PyMuPDFReader
+from llama_index.readers.file.pymu_pdf import PyMuPDFReader
 import os
 from dotenv import load_dotenv
 import tiktoken
