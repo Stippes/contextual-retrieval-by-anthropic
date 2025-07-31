@@ -6,6 +6,15 @@ import json
 from dotenv import load_dotenv
 load_dotenv()
 
+st.set_page_config(
+    page_title="Contextual Retrieval",
+    page_icon="🦙",
+    layout="wide",
+)
+
+with open("streamlit_style.css") as css_file:
+    st.markdown(f"<style>{css_file.read()}</style>", unsafe_allow_html=True)
+
 BASE_PATH = os.getenv("BASE_PATH", "")
 st.title(f"Chatbot Interface for Drive: {BASE_PATH}")
 st.markdown("Implemented in Llama-index 🦙")
@@ -59,10 +68,12 @@ with st.chat_message("assistant"):
         response = st.write_stream(fake_data)
 
     # Display document snippets associated with the response
-    for src in st.session_state.get("sources", []):
-        doc_name = os.path.basename(src.get("file", "Document"))
-        snippet = src.get("text", "")
-        with st.expander(doc_name):
-            st.write(snippet)
+    if st.session_state.get("sources"):
+        st.sidebar.header("Sources")
+        for src in st.session_state["sources"]:
+            doc_name = os.path.basename(src.get("file", "Document"))
+            snippet = src.get("text", "")
+            st.sidebar.markdown(f"**{doc_name}**")
+            st.sidebar.write(snippet)
 
 st.session_state.messages.append({"role": "assistant", "content": response})
