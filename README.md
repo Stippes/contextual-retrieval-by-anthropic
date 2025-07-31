@@ -30,7 +30,7 @@ This project demonstrates contextual retrieval as described by Anthropic. Docume
    - `SAVE_DIR` – folder where the database is stored
    - `COLLECTION_NAME` – name of the ChromaDB collection
    - `API_URL` – URL of the FastAPI endpoint
-   - `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_EMBEDDING_MODEL` – credentials for OpenAI
+   - `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_EMBEDDING_MODEL` – credentials for OpenAI. `OPENAI_MODEL` sets the chat model name used in requests.
    - `AZURE_API_KEY`, `AZURE_ENDPOINT`, `AZURE_DEPLOYMENT_NAME`, `AZURE_API_VERSION` – credentials for Azure OpenAI (optional when using OpenAI)
 
    You can run the app with only an OpenAI API key by providing `OPENAI_API_KEY` and the model names while leaving the Azure variables empty. Either Azure or OpenAI credentials must be supplied.

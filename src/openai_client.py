@@ -3,7 +3,9 @@ from typing import List
 from openai import OpenAI
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL", "gpt-3.5-turbo")
+# The model used for chat completions.
+# This variable was previously named ``OPENAI_CHAT_MODEL``.
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
 OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-ada-002")
 
 
@@ -14,7 +16,7 @@ def _get_client() -> OpenAI:
 def chat_completion(prompt: str) -> str:
     client = _get_client()
     response = client.chat.completions.create(
-        model=OPENAI_CHAT_MODEL,
+        model=OPENAI_MODEL,
         messages=[{"role": "user", "content": prompt}],
     )
     return response.choices[0].message.content
