@@ -1,14 +1,10 @@
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.core import StorageContext
 from llama_index.core import VectorStoreIndex
-from llama_index.embeddings.openai import OpenAIEmbedding
 import chromadb
 import os
 
-if os.getenv("OPENAI_API_KEY"):
-    from src.openai_client import OpenAIEmbedding as EmbeddingModel
-else:
-    from src.azure_client import AzureEmbedding as EmbeddingModel
+from src.openai_client import OpenAIEmbedding as EmbeddingModel
 
 def save_chromadb(nodes: list, 
                   db_name: str, 
@@ -18,8 +14,7 @@ def save_chromadb(nodes: list,
     print("-:-:-:- ChromaDB [Vector Database] creating ... -:-:-:-")
 
     # Embedding Model
-    # embed_model = EmbeddingModel()
-    embed_model = OpenAIEmbedding(model="text-embedding-3-small", embed_batch_size=10)
+    embed_model = EmbeddingModel()
 
     # Path to save the database file
     save_pth = os.path.join(save_dir, db_name)
