@@ -30,6 +30,12 @@ class SemanticBM25Retriever(BaseRetriever):
         BM25_DB_PATH = os.path.join(BASE_PATH, os.getenv("BM25_DB_PATH", ""))
 
         try:
+            bm25_index_file = os.path.join(BM25_DB_PATH, "params.index.json")
+            if not (os.path.isdir(BM25_DB_PATH) and os.path.isfile(bm25_index_file)):
+                raise FileNotFoundError(
+                    f"BM25 index not found at {BM25_DB_PATH}. Run create_save_db.py to build the database."
+                )
+
             # Embedding Model
             self._embed_model = EmbeddingModel()
 
