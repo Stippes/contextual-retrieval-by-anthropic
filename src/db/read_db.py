@@ -12,10 +12,7 @@ import os
 from dotenv import load_dotenv
 from src.logging_config import get_logger
 
-if os.getenv("OPENAI_API_KEY"):
-    from src.openai_client import OpenAIEmbedding as EmbeddingModel
-else:
-    from src.azure_client import AzureEmbedding as EmbeddingModel
+from src.openai_client import OpenAIEmbedding as EmbeddingModel
 
 load_dotenv()
 

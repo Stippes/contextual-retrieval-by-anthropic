@@ -7,10 +7,7 @@ import tiktoken
 
 load_dotenv()
 
-if os.getenv("OPENAI_API_KEY"):
-    from src.openai_client import chat_completion
-else:
-    from src.azure_client import chat_completion
+from src.openai_client import chat_completion
 
 from .save_vectordb import save_chromadb
 from .save_bm25 import save_BM25
@@ -37,8 +34,6 @@ def create_and_save_db(
     CHUNK_SIZE = chunk_size
     CHUNK_OVERLAP = chunk_overlap
 
-    # Using Azure OpenAI for contextual retrieval
-    
     # Reading documents
     reader = SimpleDirectoryReader(
         input_dir=DATA_DIR,
