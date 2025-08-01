@@ -62,26 +62,26 @@ async def root(user_query: UserQuery):
         raise
 
 
-@app.post("/upload")
-async def upload(file: UploadFile = File(...)):
-    """Upload a document and rebuild the vector store."""
-    data_dir = os.path.join(os.getenv("BASE_PATH", ""), os.getenv("DATA_DIR", ""))
-    os.makedirs(data_dir, exist_ok=True)
-    file_path = os.path.join(data_dir, file.filename)
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
-    logger.info("Saved uploaded file: %s", file_path)
-    try:
-        create_and_save_db(
-            data_dir=os.getenv("DATA_DIR", ""),
-            save_dir=os.getenv("SAVE_DIR", ""),
-            collection_name=os.getenv("COLLECTION_NAME"),
-            db_name="cook_book_db",
-        )
-    except Exception:
-        logger.exception("Error rebuilding database")
-        raise
-    return {"filename": file.filename}
+# @app.post("/upload")
+# async def upload(file: UploadFile = File(...)):
+#     """Upload a document and rebuild the vector store."""
+#     data_dir = os.path.join(os.getenv("BASE_PATH", ""), os.getenv("DATA_DIR", ""))
+#     os.makedirs(data_dir, exist_ok=True)
+#     file_path = os.path.join(data_dir, file.filename)
+#     with open(file_path, "wb") as f:
+#         f.write(await file.read())
+#     logger.info("Saved uploaded file: %s", file_path)
+#     try:
+#         create_and_save_db(
+#             data_dir=os.getenv("DATA_DIR", ""),
+#             save_dir=os.getenv("SAVE_DIR", ""),
+#             collection_name=os.getenv("COLLECTION_NAME"),
+#             db_name="cook_book_db",
+#         )
+#     except Exception:
+#         logger.exception("Error rebuilding database")
+#         raise
+#     return {"filename": file.filename}
 
 
 if __name__ == "__main__":

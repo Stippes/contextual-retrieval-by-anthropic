@@ -10,7 +10,7 @@ from llama_index.core.workflow import (
 from llama_index.core import PromptTemplate
 from llama_index.core.workflow import Event
 from llama_index.core.schema import NodeWithScore
-from llama_index.llms.ollama import Ollama
+# from llama_index.llms.ollama import Ollama
 from src.db.read_db import SemanticBM25Retriever
 
 class RetrieverEvent(Event):

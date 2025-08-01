@@ -28,8 +28,10 @@ def create_and_save_db(
 
     # Path directory to data storage
     BASE_PATH = os.getenv("BASE_PATH", "")
-    DATA_DIR = os.path.join(BASE_PATH, data_dir)
-    SAVE_DIR = os.path.join(BASE_PATH, save_dir)
+    DATA_DIR =  os.getenv("DATA_DIR", "")
+    SAVE_DIR =  os.getenv("SAVE_DIR", "")
+    # DATA_DIR = os.path.join(BASE_PATH, data_dir)
+    # SAVE_DIR = os.path.join(BASE_PATH, save_dir)
 
     # Hyperparameters for text splitting
     CHUNK_SIZE = chunk_size
