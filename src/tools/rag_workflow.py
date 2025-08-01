@@ -14,7 +14,8 @@ from src.db.read_db import SemanticBM25Retriever
 from src.openai_client import OpenAIChatClient
 from llama_index.core.llms.custom import CustomLLM
 from llama_index.core.callbacks import CallbackManager
-from typing import Any
+from typing import Any, Optional
+from pydantic import Field
 from llama_index.core.base.llms.types import (
     CompletionResponse,
     CompletionResponseGen,
@@ -39,7 +40,14 @@ qa_template = PromptTemplate(template)
 
 
 class OpenAIChatLLM(CustomLLM):
-    """LLM wrapper that uses :class:`OpenAIChatClient`."""
+    # declare `client` as a field so Pydantic knows about it
+    client: OpenAIChatClient = Field(default_factory=OpenAIChatClient)
+
+    def __init__(self, client: Optional[OpenAIChatClient] = None) -> None:
+        # if you want to override the default, object.__setattr__ to avoid Pydantic checks:
+        super().__init__(callback_manager=CallbackManager([]))
+        if client is not None:
+            object.__setattr__(self, "client", client)
 
     def __init__(self, client: OpenAIChatClient | None = None) -> None:
         super().__init__(callback_manager=CallbackManager([]))
@@ -116,7 +124,7 @@ class RAGWorkflow(Workflow):
         llm = OpenAIChatLLM()
         summarizer = CompactAndRefine(
             llm=llm,
-            streaming=True,
+            streaming=False,
             verbose=True,
             text_qa_template=qa_template,
         )
