@@ -10,8 +10,16 @@ from llama_index.core.workflow import (
 from llama_index.core import PromptTemplate
 from llama_index.core.workflow import Event
 from llama_index.core.schema import NodeWithScore
-# from llama_index.llms.ollama import Ollama
 from src.db.read_db import SemanticBM25Retriever
+from src.openai_client import OpenAIChatClient
+from llama_index.core.llms.custom import CustomLLM
+from llama_index.core.callbacks import CallbackManager
+from typing import Any
+from llama_index.core.base.llms.types import (
+    CompletionResponse,
+    CompletionResponseGen,
+    LLMMetadata,
+)
 
 class RetrieverEvent(Event):
     """Result of running retrieval"""
@@ -28,6 +36,41 @@ template = (
 )
 
 qa_template = PromptTemplate(template)
+
+
+class OpenAIChatLLM(CustomLLM):
+    """LLM wrapper that uses :class:`OpenAIChatClient`."""
+
+    def __init__(self, client: OpenAIChatClient | None = None) -> None:
+        super().__init__(callback_manager=CallbackManager([]))
+        self.client = client or OpenAIChatClient()
+
+    @classmethod
+    def class_name(cls) -> str:
+        return "openai_chat_llm"
+
+    @property
+    def metadata(self) -> LLMMetadata:
+        return LLMMetadata(
+            context_window=8192,
+            num_output=-1,
+            is_chat_model=True,
+            model_name=self.client.model,
+        )
+
+    def complete(self, prompt: str, formatted: bool = False, **kwargs: Any) -> CompletionResponse:
+        text = self.client.chat([{"role": "user", "content": prompt}])
+        return CompletionResponse(text=text)
+
+    def stream_complete(
+        self, prompt: str, formatted: bool = False, **kwargs: Any
+    ) -> CompletionResponseGen:
+        text = self.client.chat([{"role": "user", "content": prompt}])
+
+        def gen() -> CompletionResponseGen:
+            yield CompletionResponse(text=text, delta=text)
+
+        return gen()
 
 # RAG using workflow
 class RAGWorkflow(Workflow):
@@ -70,8 +113,13 @@ class RAGWorkflow(Workflow):
     @step
     async def synthesize(self, ctx: Context, ev: RetrieverEvent) -> StopEvent:
 
-        llm = Ollama(model="gemma2:2b", request_timeout=60.0)
-        summarizer = CompactAndRefine(llm=llm, streaming=True, verbose=True, text_qa_template=qa_template)
+        llm = OpenAIChatLLM()
+        summarizer = CompactAndRefine(
+            llm=llm,
+            streaming=True,
+            verbose=True,
+            text_qa_template=qa_template,
+        )
         query = await ctx.get("query", default=None)
 
         response = await summarizer.asynthesize(query, nodes=ev.nodes)
