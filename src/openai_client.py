@@ -1,6 +1,7 @@
 import os
 from typing import List
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
+import asyncio
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 # The model used for chat completions.
@@ -11,6 +12,10 @@ OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-ada
 
 def _get_client() -> OpenAI:
     return OpenAI(api_key=OPENAI_API_KEY)
+
+
+def _get_async_client() -> AsyncOpenAI:
+    return AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 
 def chat_completion(prompt: str) -> str:
@@ -45,6 +50,12 @@ def get_embeddings(texts: List[str]) -> List[List[float]]:
     return [d.embedding for d in response.data]
 
 
+async def get_embeddings_async(texts: List[str]) -> List[List[float]]:
+    client = _get_async_client()
+    response = await client.embeddings.create(model=OPENAI_EMBEDDING_MODEL, input=texts)
+    return [d.embedding for d in response.data]
+
+
 from llama_index.core.base.embeddings.base import BaseEmbedding, Embedding
 
 
@@ -57,3 +68,12 @@ class OpenAIEmbedding(BaseEmbedding):
 
     def _get_text_embeddings(self, texts: List[str]) -> List[Embedding]:
         return get_embeddings(texts)
+
+    async def _aget_text_embedding(self, text: str) -> Embedding:
+        return (await get_embeddings_async([text]))[0]
+
+    async def _aget_query_embedding(self, query: str) -> Embedding:
+        return (await get_embeddings_async([query]))[0]
+
+    async def _aget_text_embeddings(self, texts: List[str]) -> List[Embedding]:
+        return await get_embeddings_async(texts)
