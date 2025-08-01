@@ -124,7 +124,7 @@ class RAGWorkflow(Workflow):
         llm = OpenAIChatLLM()
         summarizer = CompactAndRefine(
             llm=llm,
-            streaming=False,
+            streaming=True,
             verbose=True,
             text_qa_template=qa_template,
         )
