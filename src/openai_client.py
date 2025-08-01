@@ -22,6 +22,23 @@ def chat_completion(prompt: str) -> str:
     return response.choices[0].message.content
 
 
+class OpenAIChatClient:
+    """Wrapper around :class:`openai.OpenAI` chat completions."""
+
+    def __init__(self, api_key: str | None = None, model: str | None = None) -> None:
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.model = model or os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+        self._client = OpenAI(api_key=self.api_key)
+
+    def chat(self, messages: List[dict]) -> str:
+        """Return the assistant reply for the given messages."""
+        response = self._client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+        )
+        return response.choices[0].message.content
+
+
 def get_embeddings(texts: List[str]) -> List[List[float]]:
     client = _get_client()
     response = client.embeddings.create(model=OPENAI_EMBEDDING_MODEL, input=texts)
