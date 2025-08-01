@@ -1,11 +1,12 @@
 from src.tools.rag_workflow import RAGWorkflow
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 import os
 from dotenv import load_dotenv
 from src.logging_config import get_logger
+from src.contextual_retrieval.save_contextual_retrieval import create_and_save_db
 from typing import List
 
 load_dotenv()
@@ -59,6 +60,28 @@ async def root(user_query: UserQuery):
     except Exception:
         logger.exception("Error processing /rag-chat request")
         raise
+
+
+@app.post("/upload")
+async def upload(file: UploadFile = File(...)):
+    """Upload a document and rebuild the vector store."""
+    data_dir = os.path.join(os.getenv("BASE_PATH", ""), os.getenv("DATA_DIR", ""))
+    os.makedirs(data_dir, exist_ok=True)
+    file_path = os.path.join(data_dir, file.filename)
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+    logger.info("Saved uploaded file: %s", file_path)
+    try:
+        create_and_save_db(
+            data_dir=os.getenv("DATA_DIR", ""),
+            save_dir=os.getenv("SAVE_DIR", ""),
+            collection_name=os.getenv("COLLECTION_NAME"),
+            db_name="cook_book_db",
+        )
+    except Exception:
+        logger.exception("Error rebuilding database")
+        raise
+    return {"filename": file.filename}
 
 
 if __name__ == "__main__":

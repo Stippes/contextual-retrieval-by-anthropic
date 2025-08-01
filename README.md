@@ -48,3 +48,8 @@ This project demonstrates contextual retrieval as described by Anthropic. Docume
    ```
 
 Once running, open the Streamlit page and begin asking questions about your documents.
+
+## API endpoints
+
+- `POST /rag-chat` – submit a question and receive an answer with document sources.
+- `POST /upload` – upload a new document. The file is saved to `DATA_DIR` and the vector store is rebuilt automatically.
