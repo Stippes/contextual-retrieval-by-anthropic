@@ -74,5 +74,6 @@ with st.chat_message("assistant"):
             snippet = src.get("text", "")
             st.sidebar.markdown(f"**{doc_name}**")
             st.sidebar.write(snippet)
+            st.sidebar.caption(src.get("path", ""))
 
 st.session_state.messages.append({"role": "assistant", "content": response})

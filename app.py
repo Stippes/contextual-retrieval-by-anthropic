@@ -39,7 +39,11 @@ async def RAG_chat(w, query):
     answer = result["answer"]
 
     sources: List[dict] = [
-        {"file": n.node.metadata.get("file_name"), "text": n.node.metadata.get("raw_chunk")}
+        {
+            "file": n.node.metadata.get("file_name"),
+            "path": n.node.metadata.get("file_path"),
+            "text": n.node.metadata.get("raw_chunk"),
+        }
         for n in nodes
     ]
     filenames = [os.path.basename(n.node.metadata.get("file_name", "")) for n in nodes if n.node.metadata.get("file_name")]
