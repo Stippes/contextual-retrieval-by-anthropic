@@ -37,9 +37,18 @@ def create_and_save_db(
     # Reading documents
     reader = SimpleDirectoryReader(
         input_dir=DATA_DIR,
-        file_extractor={".pdf": PyMuPDFReader()}
+        file_extractor={".pdf": PyMuPDFReader()},
+        recursive=True,
     )
     documents = reader.load_data()
+
+    for doc in documents:
+        metadata = doc.metadata or {}
+        file_path = metadata.get("file_path")
+        if file_path:
+            rel = os.path.relpath(file_path, DATA_DIR)
+            metadata["file_path"] = rel
+        doc.metadata = metadata
 
     original_document_content = ""
     for page in documents:
