@@ -17,8 +17,7 @@ with open("streamlit_style.css") as css_file:
 
 BASE_PATH = os.getenv("BASE_PATH", "")
 st.title(f"Chatbot Interface for Drive: {BASE_PATH}")
-st.markdown("Implemented in Llama-index 🦙")
-st.markdown("Link to the Anthropic [blog post](https://www.anthropic.com/news/contextual-retrieval)")
+st.markdown("Local implementation test version for local AI processing")
 
 # Streaming response from API call
 # Updated to handle JSON payload returned from the `/rag-chat` endpoint.
@@ -41,7 +40,7 @@ def response_generator(query):
 
 # Function for first None request
 def fake_data():
-    _LOREM_IPSUM = "Hi !!! I am your personal recipe assistant. How can i help you ?"
+    _LOREM_IPSUM = "Hi! I am your local chat-with-your-data assistant. Anything you want to know?"
     for word in _LOREM_IPSUM.split(" "):
         yield word + " "
         time.sleep(0.05)

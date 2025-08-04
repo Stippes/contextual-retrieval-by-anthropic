@@ -7,3 +7,12 @@ body {
 h1 {
     color: #4b4b4b;
 }
+
+
+section[data-testid="stSidebar"] {
+    width: 600px !important;
+}
+
+section[data-testid="stSidebar"] > div {
+    width: 600px !important;
+}
