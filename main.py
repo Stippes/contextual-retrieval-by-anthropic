@@ -72,7 +72,11 @@ with st.chat_message("assistant"):
         for src in st.session_state["sources"]:
             doc_name = os.path.basename(src.get("file", "Document"))
             snippet = src.get("text", "")
-            st.sidebar.markdown(f"**{doc_name}**")
+            link = src.get("link", "")
+            st.sidebar.markdown(
+                f"[{doc_name}]({link})",
+                unsafe_allow_html=True,
+            )
             st.sidebar.write(snippet)
             st.sidebar.caption(src.get("path", ""))
 
