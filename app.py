@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from src.logging_config import get_logger
 from src.contextual_retrieval.save_contextual_retrieval import create_and_save_db
@@ -38,14 +39,22 @@ async def RAG_chat(w, query):
     nodes = result["nodes"]
     answer = result["answer"]
 
-    sources: List[dict] = [
-        {
-            "file": n.node.metadata.get("file_name"),
-            "path": n.node.metadata.get("file_path"),
-            "text": n.node.metadata.get("raw_chunk"),
-        }
-        for n in nodes
-    ]
+    sources: List[dict] = []
+    for n in nodes:
+        file_path = n.node.metadata.get("file_path")
+        link = (
+            Path(file_path).resolve().as_uri()
+            if file_path
+            else None
+        )
+        sources.append(
+            {
+                "file": n.node.metadata.get("file_name"),
+                "path": file_path,
+                "text": n.node.metadata.get("raw_chunk"),
+                "link": link,
+            }
+        )
     filenames = [os.path.basename(n.node.metadata.get("file_name", "")) for n in nodes if n.node.metadata.get("file_name")]
     if filenames:
         logger.info("Documents accessed: %s", ", ".join(filenames))
