@@ -1,5 +1,5 @@
 from llama_index.core import SimpleDirectoryReader
-from llama_index.core.node_parser import TokenTextSplitter
+from llama_index.core.schema import TextNode
 from llama_index.readers.file.pymu_pdf import PyMuPDFReader
 import os
 from dotenv import load_dotenv
@@ -8,6 +8,7 @@ import tiktoken
 load_dotenv()
 
 from src.openai_client import chat_completion
+from src.ingest.chunking import chunk_elements
 
 from .save_vectordb import save_chromadb
 from .save_bm25 import save_BM25
@@ -30,10 +31,6 @@ def create_and_save_db(
     # DATA_DIR = os.path.join(BASE_PATH, data_dir)
     # SAVE_DIR = os.path.join(BASE_PATH, save_dir)
 
-    # Hyperparameters for text splitting
-    CHUNK_SIZE = chunk_size
-    CHUNK_OVERLAP = chunk_overlap
-
     # Reading documents
     reader = SimpleDirectoryReader(
         input_dir=DATA_DIR,
@@ -50,8 +47,11 @@ def create_and_save_db(
             metadata["file_path"] = rel
         doc.metadata = metadata
 
+    # Convert documents to element-style dicts
+    elements = []
     original_document_content = ""
     for page in documents:
+        elements.append({"text": page.text, "metadata": page.metadata, "type": "NarrativeText"})
         original_document_content += page.text
 
     # tokenizer for token-level operations
@@ -69,15 +69,14 @@ def create_and_save_db(
         max_document_tokens,
     )
 
-    # Initializing text splitter
-    splitter = TokenTextSplitter(
-        chunk_size=CHUNK_SIZE,
-        chunk_overlap=CHUNK_OVERLAP,
-        separator=" ",
+    # Chunk documents into nodes
+    CHUNK_SIZE = chunk_size
+    chunks = chunk_elements(
+        elements,
+        target_tokens=CHUNK_SIZE,
+        max_tokens=max(1200, CHUNK_SIZE * 2),
     )
-
-    # Splitting documents to Nodes [text chunks]
-    nodes = splitter.get_nodes_from_documents(documents)
+    nodes = [TextNode(text=c["text"], metadata=c.get("metadata", {})) for c in chunks]
 
     # Template referred from Anthropic Blog Post
     template = """
