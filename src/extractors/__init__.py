@@ -19,6 +19,9 @@ def ingest_file(
     """Ingest a file using Unstructured and/or Tika."""
     tika = tika or TikaAdapter()
     extractors: list[str] = [prefer, "tika" if prefer == "unstructured" else "unstructured"]
+    def _text_len(els: list[Element]) -> int:
+        return sum(len(getattr(el, "text", "").strip()) for el in els)
+
     elements: list[Element] = []
     for extractor in extractors:
         try:
@@ -26,6 +29,11 @@ def ingest_file(
                 elements = extract_unstructured(path, mime)
             else:
                 elements = tika.extract(path, mime)
+                if (
+                    mime == "application/pdf"
+                    and _text_len(elements) < 10
+                ):
+                    elements = tika.extract(path, mime, ocr="ocr_and_text")
         except Exception:
             elements = []
         if elements:
