@@ -1,17 +1,17 @@
-from llama_index.core import SimpleDirectoryReader
-from llama_index.core.schema import TextNode
-from llama_index.readers.file.pymu_pdf import PyMuPDFReader
 import os
 from dotenv import load_dotenv
 import tiktoken
 
-load_dotenv()
+from llama_index.core.schema import TextNode
 
 from src.openai_client import chat_completion
 from src.ingest.chunking import chunk_elements
+from src.extractors import load_documents
 
 from .save_vectordb import save_chromadb
 from .save_bm25 import save_BM25
+
+load_dotenv()
 
 def create_and_save_db(
         data_dir: str,
@@ -31,28 +31,26 @@ def create_and_save_db(
     # DATA_DIR = os.path.join(BASE_PATH, data_dir)
     # SAVE_DIR = os.path.join(BASE_PATH, save_dir)
 
-    # Reading documents
-    reader = SimpleDirectoryReader(
-        input_dir=DATA_DIR,
-        file_extractor={".pdf": PyMuPDFReader()},
-        recursive=True,
-    )
-    documents = reader.load_data()
+    # Collect file paths and load structured elements
+    paths: list[str] = []
+    for root, _, files in os.walk(DATA_DIR):
+        for file in files:
+            paths.append(os.path.join(root, file))
 
-    for doc in documents:
-        metadata = doc.metadata or {}
-        file_path = metadata.get("file_path")
-        if file_path:
-            rel = os.path.relpath(file_path, DATA_DIR)
-            metadata["file_path"] = rel
-        doc.metadata = metadata
+    elements = load_documents(paths)
 
-    # Convert documents to element-style dicts
-    elements = []
-    original_document_content = ""
-    for page in documents:
-        elements.append({"text": page.text, "metadata": page.metadata, "type": "NarrativeText"})
-        original_document_content += page.text
+    # Assign document IDs and normalize metadata
+    doc_ids: dict[str, int] = {}
+    for el in elements:
+        md = getattr(el, "metadata", {}) or {}
+        file_name = md.get("filename") or md.get("file_name") or ""
+        if file_name not in doc_ids:
+            doc_ids[file_name] = len(doc_ids)
+        md["file_name"] = file_name
+        md["doc_id"] = doc_ids[file_name]
+        el.metadata = md
+
+    original_document_content = "".join(getattr(el, "text", "") for el in elements)
 
     # tokenizer for token-level operations
     encoding = tiktoken.get_encoding("cl100k_base")
@@ -117,8 +115,16 @@ def create_and_save_db(
         contextual_text = response_text + content_body
         nodes[idx].text = contextual_text
 
-        metadata["file_name"] = metadata.get("file_name") or metadata.get("file_path") or ""
+        metadata["file_name"] = metadata.get("file_name") or ""
         metadata["section"] = idx
+        metadata["doc_id"] = metadata.get("doc_id")
+        anchor = (
+            metadata.get("page_number")
+            or metadata.get("slide_number")
+            or metadata.get("slide_id")
+        )
+        if anchor is not None:
+            metadata["anchor"] = anchor
         nodes[idx].metadata = metadata
 
         idx += 1

@@ -10,19 +10,24 @@ This project demonstrates contextual retrieval as described by Anthropic. Docume
    cd contextual-retrieval-by-anthropic
    ```
 
-2. **Install dependencies**
+2. **Run the Apache Tika server**
+   ```bash
+   docker run -p 9998:9998 apache/tika:3.2.0.0-full
+   ```
+
+3. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
-   PyMuPDF is required for loading PDF files.
+   This installs [Unstructured](https://github.com/Unstructured-IO/unstructured) and other required packages.
 
-3. **Prepare your documents**
+4. **Prepare your documents**
    ```bash
    mkdir data
    # add .pdf, .docx or .txt files inside this folder
    ```
 
-4. **Configure environment variables**
+5. **Configure environment variables**
    Copy `.env.example` to `.env` and fill in the values.
    Important variables are:
    - `BASE_PATH` – root directory for data and database files
@@ -32,15 +37,16 @@ This project demonstrates contextual retrieval as described by Anthropic. Docume
    - `API_URL` – URL of the FastAPI endpoint
    - `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_EMBEDDING_MODEL` – credentials for OpenAI. `OPENAI_MODEL` sets the chat model name used in requests.
    - `AZURE_API_KEY`, `AZURE_ENDPOINT`, `AZURE_DEPLOYMENT_NAME`, `AZURE_API_VERSION` – credentials for Azure OpenAI (optional when using OpenAI)
+   - `TIKA_URL` – URL of the Tika server (default `http://localhost:9998`)
 
    You can run the app with only an OpenAI API key by providing `OPENAI_API_KEY` and the model names while leaving the Azure variables empty. Either Azure or OpenAI credentials must be supplied.
 
-5. **Create the vector store**
+6. **Create the vector store**
    ```bash
    python create_save_db.py
    ```
 
-6. **Start services**
+7. **Start services**
    ```bash
    ollama serve            # run in a separate terminal
    python app.py           # start the FastAPI server
