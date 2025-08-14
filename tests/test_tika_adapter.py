@@ -15,6 +15,13 @@ spec.loader.exec_module(_tika_mod)  # type: ignore[misc]
 TikaAdapter = _tika_mod.TikaAdapter
 
 
+def _fake_response(text: str) -> Mock:
+    resp = Mock()
+    resp.json.return_value = [{"content": text}]
+    resp.raise_for_status.return_value = None
+    return resp
+
+
 def load_ingest_file() -> callable:
     """Load ``ingest_file`` from ``src/extractors/__init__.py`` without importing
     the package and its heavy dependencies."""
@@ -74,3 +81,36 @@ def test_ingest_file_retries_with_ocr(tmp_path):
         call(str(pdf_path), "application/pdf"),
         call(str(pdf_path), "application/pdf", ocr="ocr_and_text"),
     ]
+
+
+def test_extract_pdf_with_tika(sample_pdf):
+    adapter = TikaAdapter()
+    with patch("requests.put", return_value=_fake_response("Hello PDF")):
+        elements = adapter.extract(str(sample_pdf), "application/pdf")
+    assert any("Hello PDF" in el.text for el in elements)
+
+
+def test_extract_docx_with_tika(sample_docx):
+    adapter = TikaAdapter()
+    with patch(
+        "requests.put",
+        return_value=_fake_response("Hello DOCX"),
+    ):
+        elements = adapter.extract(
+            str(sample_docx),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+    assert any("Hello DOCX" in el.text for el in elements)
+
+
+def test_extract_pptx_with_tika(sample_pptx):
+    adapter = TikaAdapter()
+    with patch(
+        "requests.put",
+        return_value=_fake_response("Hello PPTX"),
+    ):
+        elements = adapter.extract(
+            str(sample_pptx),
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        )
+    assert any("Hello PPTX" in el.text for el in elements)
