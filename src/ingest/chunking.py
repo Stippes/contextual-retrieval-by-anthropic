@@ -105,10 +105,11 @@ def chunk_elements(
     buffer: List[str] = []
     buffer_tokens = 0
     current_md: Dict[str, Any] = {}
+    current_sheet: str | None = None
     list_buffer: List[str] = []
 
     def flush_buffer() -> None:
-        nonlocal buffer, buffer_tokens, current_md
+        nonlocal buffer, buffer_tokens, current_md, current_sheet
         if not buffer:
             return
         text = "\n".join(buffer).strip()
@@ -119,6 +120,7 @@ def chunk_elements(
         buffer = []
         buffer_tokens = 0
         current_md = {}
+        current_sheet = None
 
     def flush_list(md: Dict[str, Any]) -> None:
         nonlocal list_buffer
@@ -129,12 +131,13 @@ def chunk_elements(
         add_text(list_text, md)
 
     def add_text(text: str, md: Dict[str, Any]) -> None:
-        nonlocal buffer_tokens, buffer, current_md
+        nonlocal buffer_tokens, buffer, current_md, current_sheet
         tks = count_tokens(text)
         if buffer and buffer_tokens + tks > target_tokens:
             flush_buffer()
         if not buffer:
             current_md = md.copy()
+            current_sheet = md.get("sheet")
         buffer.append(text)
         buffer_tokens += tks
         if buffer_tokens >= target_tokens:
@@ -185,12 +188,20 @@ def chunk_elements(
         typ = _get_type(el).lower()
         text = _get_text(el).strip()
         md = _get_metadata(el)
+        sheet_name = md.get("sheet") or md.get("sheet_name") or md.get("page_name")
+        if sheet_name:
+            md["sheet"] = sheet_name
+        if current_sheet is not None and sheet_name != current_sheet:
+            flush_list(current_md)
+            flush_buffer()
+            current_heading = None
 
         if typ in heading_types:
             flush_list(md)
             flush_buffer()
             current_heading = text
             current_md = md.copy()
+            current_sheet = md.get("sheet")
             buffer.append(text)
             buffer_tokens = count_tokens(text)
             continue
@@ -198,10 +209,12 @@ def chunk_elements(
         if typ in list_types:
             list_buffer.append(text)
             current_md = md.copy()
+            current_sheet = md.get("sheet")
             continue
 
         if typ == "table":
             handle_table(el, md)
+            current_sheet = md.get("sheet")
             continue
 
         flush_list(md)
