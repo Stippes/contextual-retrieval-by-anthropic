@@ -6,4 +6,5 @@ cook_book_db_vectordb
 
 venv/
 
-data/
+!tests/data/
+!tests/data/*
