@@ -29,3 +29,14 @@ def test_slide_and_notes():
     assert any(c["metadata"].get("slide_id") == 1 for c in chunks)
     note_chunks = [c for c in chunks if c["metadata"].get("section_title") == "slide_note"]
     assert note_chunks and "Note content" in note_chunks[0]["text"]
+
+
+def test_xlsx_sheet_metadata():
+    elements = [
+        {"type": "NarrativeText", "text": "Cell A", "metadata": {"page_name": "Sheet1"}},
+        {"type": "NarrativeText", "text": "Cell B", "metadata": {"page_name": "Sheet1"}},
+        {"type": "NarrativeText", "text": "Cell C", "metadata": {"page_name": "Sheet2"}},
+    ]
+    chunks = chunk_elements(elements, target_tokens=50, max_tokens=100)
+    assert chunks[0]["metadata"].get("sheet") == "Sheet1"
+    assert chunks[1]["metadata"].get("sheet") == "Sheet2"
