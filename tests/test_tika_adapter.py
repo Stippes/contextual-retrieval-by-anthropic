@@ -74,3 +74,21 @@ def test_ingest_file_retries_with_ocr(tmp_path):
         call(str(pdf_path), "application/pdf"),
         call(str(pdf_path), "application/pdf", ocr="ocr_and_text"),
     ]
+
+def test_ingest_file_uses_tika_for_rtf():
+    ingest_file = load_ingest_file()
+    path = Path("tests/data/sample.rtf")
+    expected_text = "This is a sample RTF fixture for Tika."
+
+    fake_response = Mock()
+    fake_response.json.return_value = [{"content": expected_text}]
+    fake_response.raise_for_status.return_value = None
+
+    with patch("requests.put", return_value=fake_response) as mock_put:
+        elements = ingest_file(str(path), "application/rtf", prefer="tika")
+
+    assert [el.text for el in elements] == [expected_text]
+    assert mock_put.called
+    assert mock_put.call_args.kwargs["headers"]["Content-Type"] == "application/rtf"
+
+
