@@ -36,9 +36,15 @@ def _get_text(el: Any) -> str:
 
 
 def _get_metadata(el: Any) -> Dict[str, Any]:
+    """Return metadata for ``el`` as a plain dictionary."""
+    md: Any
     if isinstance(el, MutableMapping):
-        return dict(el.get("metadata") or {})
-    return dict(getattr(el, "metadata", {}) or {})
+        md = el.get("metadata") or {}
+    else:
+        md = getattr(el, "metadata", {}) or {}
+    if hasattr(md, "to_dict"):
+        return dict(md.to_dict())
+    return dict(md)
 
 
 def chunk_elements(
