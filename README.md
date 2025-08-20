@@ -28,16 +28,18 @@ This project demonstrates contextual retrieval as described by Anthropic. Docume
    ```
 
 5. **Configure environment variables**
-   Copy `.env.example` to `.env` and fill in the values.
-   Important variables are:
+   Copy the template and then edit it:
+   ```bash
+   cp .env.example .env
+   ```
+   Fill in the values. Important variables are:
    - `BASE_PATH` – root directory for data and database files
    - `DATA_DIR` – location of your documents relative to `BASE_PATH`
    - `SAVE_DIR` – folder where the database is stored
    - `COLLECTION_NAME` – name of the ChromaDB collection
-   - `API_URL` – URL of the FastAPI endpoint
+   - `TIKA_URL` – URL of the Tika server (default `http://localhost:9998`)
    - `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_EMBEDDING_MODEL` – credentials for OpenAI. `OPENAI_MODEL` sets the chat model name used in requests.
    - `AZURE_API_KEY`, `AZURE_ENDPOINT`, `AZURE_DEPLOYMENT_NAME`, `AZURE_API_VERSION` – credentials for Azure OpenAI (optional when using OpenAI)
-   - `TIKA_URL` – URL of the Tika server (default `http://localhost:9998`)
 
    You can run the app with only an OpenAI API key by providing `OPENAI_API_KEY` and the model names while leaving the Azure variables empty. Either Azure or OpenAI credentials must be supplied.
 
