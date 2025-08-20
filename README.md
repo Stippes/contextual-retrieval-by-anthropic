@@ -24,7 +24,7 @@ This project demonstrates contextual retrieval as described by Anthropic. Docume
 4. **Prepare your documents**
    ```bash
    mkdir data
-   # add .pdf, .docx or .txt files inside this folder
+    # add .pdf, .docx, .pptx, .xlsx or .txt files inside this folder
    ```
 
 5. **Configure environment variables**
@@ -45,6 +45,7 @@ This project demonstrates contextual retrieval as described by Anthropic. Docume
    ```bash
    python create_save_db.py
    ```
+   This command ingests any files placed in `DATA_DIR`, including PowerPoint and Excel documents. See [`tests/test_ingestion_office.py`](tests/test_ingestion_office.py) for an example of validating `.pptx` and `.xlsx` ingestion.
 
 7. **Start services**
    ```bash
