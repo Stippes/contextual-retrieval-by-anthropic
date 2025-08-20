@@ -92,3 +92,23 @@ def test_ingest_file_uses_tika_for_rtf():
     assert mock_put.call_args.kwargs["headers"]["Content-Type"] == "application/rtf"
 
 
+def test_ingest_file_prefers_tika_without_unstructured(monkeypatch):
+    ingest_file = load_ingest_file()
+    path = Path("tests/data/tika_test.rtf")
+    expected_text = "Hello from Tika fixture."
+
+    mock_unstructured = Mock(return_value=[])
+    ingest_file.__globals__["extract_unstructured"] = mock_unstructured
+
+    fake_response = Mock()
+    fake_response.json.return_value = [{"content": expected_text}]
+    fake_response.raise_for_status.return_value = None
+
+    with patch("requests.put", return_value=fake_response) as mock_put:
+        elements = ingest_file(str(path), "application/rtf", prefer="tika")
+
+    assert [el.text for el in elements] == [expected_text]
+    mock_unstructured.assert_not_called()
+    assert mock_put.called
+
+
