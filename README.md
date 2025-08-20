@@ -15,6 +15,13 @@ This project demonstrates contextual retrieval as described by Anthropic. Docume
    docker run -p 9998:9998 apache/tika:3.2.0.0-full
    ```
 
+   Or currently on Windows, in the cmd:
+   '''
+   cd desktop
+   java -jar tika-server-standard-3.2.2.jar
+   '''
+
+
 3. **Install dependencies**
    ```bash
    pip install -r requirements.txt
